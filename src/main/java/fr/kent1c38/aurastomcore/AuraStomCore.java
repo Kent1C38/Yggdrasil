@@ -6,17 +6,12 @@ import java.io.File;
 
 public class AuraStomCore {
     void main(String[] args) throws Exception {
-        String modulePath;
+        String modulePath = "modules";
         int port;
-        if (args.length <= 1) {
+        if (args.length < 1) {
             port = 25565;
-            modulePath = "modules";
-        } else if (args.length == 2) {
-            port = Integer.getInteger(args[1]);
-            modulePath = "modules";
         } else {
-            port = Integer.getInteger(args[1]);
-            modulePath = args[2];
+            port = Integer.parseInt(args[0]);
         }
         File moduleDir = new File(modulePath);
         new Kernel(moduleDir).start(port);
