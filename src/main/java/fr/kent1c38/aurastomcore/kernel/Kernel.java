@@ -1,5 +1,6 @@
 package fr.kent1c38.aurastomcore.kernel;
 
+import fr.kent1c38.aurastomcore.console.StomConsole;
 import net.minestom.server.MinecraftServer;
 import net.minestom.server.coordinate.Pos;
 import net.minestom.server.entity.Player;
@@ -22,6 +23,7 @@ import java.util.logging.Logger;
 
 public class Kernel {
     private final Logger logger = Logger.getLogger("AuraStomKernel");
+    private final StomConsole console = new StomConsole();
     private final ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(4);
     private final SimpleModuleContext ctx = new SimpleModuleContext();
     private final ModuleLoader loader;
@@ -32,12 +34,15 @@ public class Kernel {
     }
 
     public void start(int port) throws Exception {
+        MinecraftServer server = MinecraftServer.init();
+
+        console.start();
+
         info("Starting kernel...");
 
         modules.addAll(loader.loadAll());
         info("%d loaded modules.", modules.size());
 
-        MinecraftServer server = MinecraftServer.init();
 
         InstanceManager instanceManager = MinecraftServer.getInstanceManager();
         InstanceContainer instanceContainer = instanceManager.createInstanceContainer();
@@ -54,8 +59,17 @@ public class Kernel {
         server.start("localhost", port);
     }
 
-    private void info(String fmt, Object... args) {logger.log(Level.INFO, String.format(fmt, args));}
-    private void warn(String fmt, Object... args) {logger.log(Level.WARNING, String.format(fmt, args));}
+    public void stop() {
+        console.stop();
+        MinecraftServer.getSchedulerManager().scheduleNextTick(() -> {
+            MinecraftServer.stopCleanly();
+            System.exit(0);
+        });
+    }
+
+    public void info(String fmt, Object... args) {logger.log(Level.INFO, String.format(fmt, args));}
+    public void warn(String fmt, Object... args) {logger.log(Level.WARNING, String.format(fmt, args));}
+    public void severe(String fmt, Object... args) {logger.log(Level.SEVERE, String.format(fmt, args));}
 
     private class SimpleModuleContext implements ModuleContext{
 
