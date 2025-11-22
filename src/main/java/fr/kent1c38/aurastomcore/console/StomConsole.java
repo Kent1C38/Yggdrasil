@@ -2,6 +2,7 @@ package fr.kent1c38.aurastomcore.console;
 
 import fr.kent1c38.aurastomcore.AuraStomCore;
 import net.minestom.server.MinecraftServer;
+import net.minestom.server.command.builder.CommandResult;
 import org.jline.reader.EndOfFileException;
 import org.jline.reader.LineReader;
 import org.jline.reader.LineReaderBuilder;
@@ -42,8 +43,13 @@ public class StomConsole {
              try {
                  String line = reader.readLine("");
                  if (!line.isBlank()) {
-                     AuraStomCore.getServer().info("Executing command /" + line);
-                     MinecraftServer.getCommandManager().execute(sender, line);
+                     CommandResult result = MinecraftServer.getCommandManager().execute(sender, line);
+                     switch (result.getType()) {
+                         case SUCCESS -> AuraStomCore.getServer().info("Executing command /" + line);
+                         case UNKNOWN -> AuraStomCore.getServer().info("Unknown command: " + line);
+                         case INVALID_SYNTAX -> AuraStomCore.getServer().info("Syntax error for command: " + line);
+                         default -> AuraStomCore.getServer().info("Entry: " + line);
+                     }
                  }
              } catch (UserInterruptException | EndOfFileException e) {
                  running = false;
