@@ -1,5 +1,6 @@
 package fr.kent1c38.aurastomcore.kernel;
 
+import fr.kent1c38.aurastomcore.commands.StopCommand;
 import fr.kent1c38.aurastomcore.console.StomConsole;
 import net.minestom.server.MinecraftServer;
 import net.minestom.server.coordinate.Pos;
@@ -43,6 +44,7 @@ public class Kernel {
         modules.addAll(loader.loadAll());
         info("%d loaded modules.", modules.size());
 
+        MinecraftServer.getCommandManager().register(new StopCommand());
 
         InstanceManager instanceManager = MinecraftServer.getInstanceManager();
         InstanceContainer instanceContainer = instanceManager.createInstanceContainer();
