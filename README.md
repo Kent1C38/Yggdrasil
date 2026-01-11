@@ -22,7 +22,7 @@ Yggdrasil is built to be **minimal by default**:
 
 Yggdrasil releases will include pre-compiled JAR files, so you can run the server without building it yourself.
 
-1. Download the latest release JAR from the [releases page](#).  
+1. Download the latest release JAR from the [releases page](https://github.com/Kent1C38/Yggdrasil/releases).  
 2. Open a terminal in the folder containing the JAR.  
 3. Run the server with:
 
