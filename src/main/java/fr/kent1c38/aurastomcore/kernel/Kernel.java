@@ -64,6 +64,7 @@ public class Kernel {
     public void stop() {
         console.stop();
         MinecraftServer.getSchedulerManager().scheduleNextTick(() -> {
+            loader.unloadAll();
             MinecraftServer.stopCleanly();
             System.exit(0);
         });
@@ -107,6 +108,10 @@ public class Kernel {
                 default -> null;
             };
         }
+    }
+
+    public List<ModuleLoader.LoadedModule> getModules() {
+        return modules;
     }
 
     private long ticksToMs(long ticks) { return Math.max(0, ticks) * 50L; }

@@ -1,5 +1,7 @@
 package fr.kent1c38.aurastomcore.kernel;
 
+import fr.kent1c38.aurastomcore.AuraStomCore;
+
 import java.io.File;
 import java.io.InputStream;
 import java.net.URL;
@@ -63,6 +65,28 @@ public class ModuleLoader {
                 ctx.info("Successfully loaded module: %s", jarFile.getName());
                 return new LoadedModule(module, cl, jarFile.getName());
             }
+        }
+    }
+
+    public void unloadModule(LoadedModule loadedModule) {
+        try {
+            loadedModule.module.onDisable(ctx);
+        } catch (Exception e) {
+            ctx.warn("Error while disabling module %s: %s", loadedModule.jarName, e.getMessage());
+        }
+
+        try {
+            if (loadedModule.classLoader instanceof URLClassLoader cl) {
+                cl.close();
+            }
+        } catch (Exception e) {
+            ctx.warn("Error while closing classloader for %s", loadedModule.jarName);
+        }
+    }
+
+    public void unloadAll() {
+        for (LoadedModule lm : AuraStomCore.getServer().getModules()) {
+            unloadModule(lm);
         }
     }
 
