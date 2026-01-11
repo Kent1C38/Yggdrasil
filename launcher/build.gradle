@@ -1,0 +1,11 @@
+plugins {
+    id 'application'
+}
+
+application {
+    mainClass = "fr.kent1c38.yggdrasil.Yggdrasil"
+}
+
+dependencies {
+    implementation project(":engine")
+}

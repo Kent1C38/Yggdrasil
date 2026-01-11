@@ -1,0 +1,2 @@
+rootProject.name = "yggdrasil"
+include("api", "engine", "launcher")

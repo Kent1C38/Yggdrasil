@@ -1,38 +1,17 @@
-plugins {
-    id 'java'
-    id 'com.gradleup.shadow' version '9.2.2'
+allprojects {
+    group = "fr.kent1c38.yggdrasil"
+    version = "1.0.0"
 }
 
-group = 'fr.kent1c38.aurastomcore'
-version = '1.0.0'
-
-repositories {
-    mavenCentral()
-}
-
-dependencies {
-    implementation 'net.minestom:minestom:2025.10.31-1.21.10'
-    implementation 'ch.qos.logback:logback-classic:1.5.6'
-    implementation 'org.jline:jline:3.26.0'
-}
-
-java {
-    toolchain {
-        languageVersion.set(JavaLanguageVersion.of(25))
-    }
-}
-
-tasks {
-    jar {
-        manifest {
-            attributes["Main-Class"] = "fr.kent1c38.aurastomcore.AuraStomCore"
+subprojects {
+    apply plugin: "java"
+    java {
+        toolchain {
+            languageVersion = JavaLanguageVersion.of(25)
         }
     }
-    build {
-        dependsOn(shadowJar)
-    }
-    shadowJar {
-        mergeServiceFiles()
-        archiveClassifier.set("")
+
+    repositories {
+        mavenCentral()
     }
 }
