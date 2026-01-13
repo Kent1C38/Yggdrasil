@@ -1,5 +1,7 @@
 package fr.kent1c38.yggdrasil.api.module;
 
+import fr.kent1c38.yggdrasil.api.server.ServerProperties;
+
 import java.util.concurrent.ScheduledFuture;
 import java.util.function.Consumer;
 
@@ -11,5 +13,5 @@ public interface ModuleContext {
 
     ScheduledFuture<?> schedule(Runnable task, long delay, long repeat);
 
-    String getProperty(String key);
+    ServerProperties getProperties();
 }

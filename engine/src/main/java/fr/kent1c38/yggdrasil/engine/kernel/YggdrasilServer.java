@@ -1,6 +1,7 @@
 package fr.kent1c38.yggdrasil.engine.kernel;
 
 import fr.kent1c38.yggdrasil.api.module.ModuleContext;
+import fr.kent1c38.yggdrasil.api.server.ServerProperties;
 import fr.kent1c38.yggdrasil.engine.commands.StopCommand;
 import fr.kent1c38.yggdrasil.engine.console.Console;
 import net.minestom.server.MinecraftServer;
@@ -13,6 +14,7 @@ import net.minestom.server.instance.InstanceManager;
 import net.minestom.server.instance.anvil.AnvilLoader;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Executors;
@@ -24,18 +26,20 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 public class YggdrasilServer {
+    private final ServerProperties serverProperties;
     private final Logger logger = Logger.getLogger("AuraStomKernel");
     private final Console console = new Console(this);
     private final ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(4);
 	private final ModuleLoader loader;
     private final List<ModuleLoader.LoadedModule> modules = new ArrayList<>();
 
-    public YggdrasilServer(File modulesDir) {
+    public YggdrasilServer(File modulesDir) throws IOException {
 		SimpleModuleContext ctx = new SimpleModuleContext();
+        this.serverProperties = new ServerProperties();
 		this.loader = new ModuleLoader(modulesDir, ctx, this);
     }
 
-    public void start(int port) throws Exception {
+    public void start() throws Exception {
         MinecraftServer server = MinecraftServer.init();
 
         console.start();
@@ -59,7 +63,7 @@ public class YggdrasilServer {
             player.setRespawnPoint(new Pos(0, 0, 0));
         });
 
-        server.start("localhost", port);
+        server.start("localhost", serverProperties.getServerPort());
     }
 
     public void stop() {
@@ -101,14 +105,10 @@ public class YggdrasilServer {
         }
 
         @Override
-        public String getProperty(String key) {
-            return switch (key) {
-                case "server.port" -> "25575";
-                case "server.name" -> "MINESTOM";
-                case "main-class" -> "main";
-                default -> null;
-            };
+        public ServerProperties getProperties() {
+            return serverProperties;
         }
+
     }
 
     public List<ModuleLoader.LoadedModule> getModules() {
