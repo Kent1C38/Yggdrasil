@@ -3,14 +3,17 @@ package fr.kent1c38.yggdrasil.engine.kernel;
 import fr.kent1c38.yggdrasil.api.module.ModuleContext;
 import fr.kent1c38.yggdrasil.api.server.ServerProperties;
 import fr.kent1c38.yggdrasil.engine.commands.GamemodeCommand;
+import fr.kent1c38.yggdrasil.engine.commands.ListCommand;
 import fr.kent1c38.yggdrasil.engine.commands.StopCommand;
 import fr.kent1c38.yggdrasil.engine.console.Console;
 import net.minestom.server.MinecraftServer;
 import net.minestom.server.command.builder.Command;
 import net.minestom.server.coordinate.Pos;
 import net.minestom.server.entity.Player;
+import net.minestom.server.event.Event;
 import net.minestom.server.event.GlobalEventHandler;
 import net.minestom.server.event.player.AsyncPlayerConfigurationEvent;
+import net.minestom.server.event.player.PlayerDisconnectEvent;
 import net.minestom.server.instance.InstanceContainer;
 import net.minestom.server.instance.InstanceManager;
 import net.minestom.server.instance.anvil.AnvilLoader;
@@ -20,6 +23,7 @@ import org.slf4j.LoggerFactory;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -28,12 +32,18 @@ import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 
 public class YggdrasilServer {
-    private final ServerProperties serverProperties;
     private final Logger LOGGER = LoggerFactory.getLogger("Yggdrasil");
+
+    private final ServerProperties serverProperties;
     private final Console console = new Console(this);
-    private final ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(4);
-	private final ModuleLoader loader;
+
+    private final ModuleLoader loader;
     private final List<ModuleLoader.LoadedModule> modules = new ArrayList<>();
+
+    private GlobalEventHandler globalEventHandler;
+    private final ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(4);
+
+    private final HashSet<Player> onlinePlayers = new HashSet<>();
 
     public YggdrasilServer() throws IOException {
 		SimpleModuleContext ctx = new SimpleModuleContext();
@@ -52,6 +62,7 @@ public class YggdrasilServer {
         //Commands
         registerCommand(new StopCommand(this));
         registerCommand(new GamemodeCommand());
+        registerCommand(new ListCommand(this));
 
         //Instance Init
         InstanceManager instanceManager = MinecraftServer.getInstanceManager();
@@ -61,11 +72,19 @@ public class YggdrasilServer {
         instanceContainer.setChunkLoader(new AnvilLoader("worlds/world"));
 
         //Listeners
-        GlobalEventHandler globalEventHandler = MinecraftServer.getGlobalEventHandler();
+        globalEventHandler = MinecraftServer.getGlobalEventHandler();
+
+        //Player pre login
         globalEventHandler.addListener(AsyncPlayerConfigurationEvent.class, event -> {
             final Player player = event.getPlayer();
+            onlinePlayers.add(player);
             event.setSpawningInstance(instanceContainer);
             player.setRespawnPoint(new Pos(0, 0, 0));
+        });
+
+        globalEventHandler.addListener(PlayerDisconnectEvent.class, event -> {
+            final Player player = event.getPlayer();
+            onlinePlayers.remove(player);
         });
 
         server.start("localhost", serverProperties.getServerPort());
@@ -102,8 +121,8 @@ public class YggdrasilServer {
         }
 
         @Override
-        public <T> void registerEvent(Class<T> eventClass, Consumer<T> listener) {
-
+        public <T extends Event> void registerEvent(Class<T> eventClass, Consumer<T> listener) {
+            globalEventHandler.addListener(eventClass, listener);
         }
 
         @Override
@@ -134,5 +153,9 @@ public class YggdrasilServer {
 
     private void registerCommand(Command command) {
         MinecraftServer.getCommandManager().register(command);
+    }
+
+    public HashSet<Player> getOnlinePlayers() {
+        return onlinePlayers;
     }
 }
