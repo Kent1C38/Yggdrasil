@@ -1,7 +1,10 @@
 package fr.kent1c38.yggdrasil.engine.console;
 
 import fr.kent1c38.yggdrasil.engine.kernel.YggdrasilServer;
+import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
 import net.minestom.server.MinecraftServer;
+import net.minestom.server.command.CommandSender;
+import net.minestom.server.entity.Player;
 import org.jline.reader.EndOfFileException;
 import org.jline.reader.LineReader;
 import org.jline.reader.LineReaderBuilder;
@@ -49,9 +52,9 @@ public class Console {
                  String line = reader.readLine("");
                  if (!line.isBlank()) {
                      if (!MinecraftServer.getCommandManager().commandExists(line.split(" ")[0]))
-                        server.info("Unknown command: " + line);
+                        server.info("(%s) Unknown command: %s", retrieveSenderName(sender),  line);
                      else {
-                         server.info("Executing command /" + line);
+                         server.info("(%s) Executing command /%s", retrieveSenderName(sender), line);
                          MinecraftServer.getCommandManager().execute(sender, line);
                      }
                  }
@@ -69,6 +72,14 @@ public class Console {
             terminal.close();
         } catch (IOException e) {
             inputThread.interrupt();
+        }
+    }
+
+    private String retrieveSenderName(CommandSender sender) {
+        if (sender instanceof Player player) {
+            return LegacyComponentSerializer.legacySection().serialize(player.getName());
+        } else {
+            return "Console";
         }
     }
 }

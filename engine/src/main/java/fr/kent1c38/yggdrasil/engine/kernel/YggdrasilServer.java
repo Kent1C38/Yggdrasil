@@ -29,16 +29,16 @@ import java.util.function.Consumer;
 
 public class YggdrasilServer {
     private final ServerProperties serverProperties;
-    private final Logger LOGGER = (Logger) LoggerFactory.getLogger("Yggdrasil");
+    private final Logger LOGGER = LoggerFactory.getLogger("Yggdrasil");
     private final Console console = new Console(this);
     private final ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(4);
 	private final ModuleLoader loader;
     private final List<ModuleLoader.LoadedModule> modules = new ArrayList<>();
 
-    public YggdrasilServer(File modulesDir) throws IOException {
+    public YggdrasilServer() throws IOException {
 		SimpleModuleContext ctx = new SimpleModuleContext();
         this.serverProperties = new ServerProperties();
-		this.loader = new ModuleLoader(modulesDir, ctx, this);
+		this.loader = new ModuleLoader(new File("modules"), ctx, this);
     }
 
     public void start() throws Exception {
@@ -94,6 +94,11 @@ public class YggdrasilServer {
         @Override
         public void warn(String fmt, Object... args) {
             YggdrasilServer.this.warn(fmt, args);
+        }
+
+        @Override
+        public void severe(String fmt, Object... args) {
+            YggdrasilServer.this.severe(fmt, args);
         }
 
         @Override

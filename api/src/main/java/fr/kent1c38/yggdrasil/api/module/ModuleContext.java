@@ -9,6 +9,7 @@ import java.util.function.Consumer;
 public interface ModuleContext {
     void info(String fmt, Object... args);
     void warn(String fmt, Object... args);
+    void severe(String fmt, Object... args);
 
     <T> void registerEvent(Class<T> eventClass, Consumer<T> listener);
 
