@@ -12,6 +12,10 @@ java {
     }
 }
 
+dependencies {
+    implementation "net.minestom:minestom:2025.10.31-1.21.10"
+}
+
 shadowJar {
     archiveBaseName.set("Yggdrasil-API")
     archiveClassifier.set("")

@@ -2,9 +2,11 @@ package fr.kent1c38.yggdrasil.engine.kernel;
 
 import fr.kent1c38.yggdrasil.api.module.ModuleContext;
 import fr.kent1c38.yggdrasil.api.server.ServerProperties;
+import fr.kent1c38.yggdrasil.engine.commands.GamemodeCommand;
 import fr.kent1c38.yggdrasil.engine.commands.StopCommand;
 import fr.kent1c38.yggdrasil.engine.console.Console;
 import net.minestom.server.MinecraftServer;
+import net.minestom.server.command.builder.Command;
 import net.minestom.server.coordinate.Pos;
 import net.minestom.server.entity.Player;
 import net.minestom.server.event.GlobalEventHandler;
@@ -44,18 +46,21 @@ public class YggdrasilServer {
 
         console.start();
 
-        info("Starting kernel...");
-
         modules.addAll(loader.loadAll());
         info("%d loaded modules.", modules.size());
 
-        MinecraftServer.getCommandManager().register(new StopCommand(this));
+        //Commands
+        registerCommand(new StopCommand(this));
+        registerCommand(new GamemodeCommand());
 
+        //Instance Init
         InstanceManager instanceManager = MinecraftServer.getInstanceManager();
         InstanceContainer instanceContainer = instanceManager.createInstanceContainer();
 
+        //World Init
         instanceContainer.setChunkLoader(new AnvilLoader("worlds/world"));
 
+        //Listeners
         GlobalEventHandler globalEventHandler = MinecraftServer.getGlobalEventHandler();
         globalEventHandler.addListener(AsyncPlayerConfigurationEvent.class, event -> {
             final Player player = event.getPlayer();
@@ -109,6 +114,11 @@ public class YggdrasilServer {
             return serverProperties;
         }
 
+        @Override
+        public void registerCommand(Command command) {
+            YggdrasilServer.this.registerCommand(command);
+        }
+
     }
 
     public List<ModuleLoader.LoadedModule> getModules() {
@@ -116,4 +126,8 @@ public class YggdrasilServer {
     }
 
     private long ticksToMs(long ticks) { return Math.max(0, ticks) * 50L; }
+
+    private void registerCommand(Command command) {
+        MinecraftServer.getCommandManager().register(command);
+    }
 }

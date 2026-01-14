@@ -1,6 +1,7 @@
 package fr.kent1c38.yggdrasil.api.module;
 
 import fr.kent1c38.yggdrasil.api.server.ServerProperties;
+import net.minestom.server.command.builder.Command;
 
 import java.util.concurrent.ScheduledFuture;
 import java.util.function.Consumer;
@@ -14,4 +15,6 @@ public interface ModuleContext {
     ScheduledFuture<?> schedule(Runnable task, long delay, long repeat);
 
     ServerProperties getProperties();
+
+    void registerCommand(Command command);
 }
