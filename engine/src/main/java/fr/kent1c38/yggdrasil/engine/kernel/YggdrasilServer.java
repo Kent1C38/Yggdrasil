@@ -14,6 +14,8 @@ import net.minestom.server.event.player.AsyncPlayerConfigurationEvent;
 import net.minestom.server.instance.InstanceContainer;
 import net.minestom.server.instance.InstanceManager;
 import net.minestom.server.instance.anvil.AnvilLoader;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
@@ -24,12 +26,10 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 public class YggdrasilServer {
     private final ServerProperties serverProperties;
-    private final Logger logger = Logger.getLogger("AuraStomKernel");
+    private final Logger LOGGER = (Logger) LoggerFactory.getLogger("Yggdrasil");
     private final Console console = new Console(this);
     private final ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(4);
 	private final ModuleLoader loader;
@@ -80,9 +80,9 @@ public class YggdrasilServer {
         });
     }
 
-    public void info(String fmt, Object... args) {logger.log(Level.INFO, String.format(fmt, args));}
-    public void warn(String fmt, Object... args) {logger.log(Level.WARNING, String.format(fmt, args));}
-    public void severe(String fmt, Object... args) {logger.log(Level.SEVERE, String.format(fmt, args));}
+    public void info(String fmt, Object... args) {LOGGER.info(String.format(fmt, args));}
+    public void warn(String fmt, Object... args) {LOGGER.warn(String.format(fmt, args));}
+    public void severe(String fmt, Object... args) {LOGGER.error(String.format(fmt, args));}
 
     private class SimpleModuleContext implements ModuleContext {
 

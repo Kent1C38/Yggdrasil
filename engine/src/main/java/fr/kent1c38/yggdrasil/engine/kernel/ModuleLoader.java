@@ -93,16 +93,6 @@ public class ModuleLoader {
         }
     }
 
-    public static class LoadedModule {
-        public final Module module;
-        public final ClassLoader classLoader;
-        public final String jarName;
-
-        public LoadedModule(Module module, ClassLoader classLoader, String jarName) {
-            this.module = module;
-            this.classLoader = classLoader;
-            this.jarName = jarName;
-        }
-    }
+    public record LoadedModule(Module module, ClassLoader classLoader, String jarName) {}
 
 }
