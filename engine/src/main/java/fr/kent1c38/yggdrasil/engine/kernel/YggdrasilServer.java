@@ -13,6 +13,7 @@ import net.minestom.server.entity.Player;
 import net.minestom.server.event.Event;
 import net.minestom.server.event.GlobalEventHandler;
 import net.minestom.server.event.player.AsyncPlayerConfigurationEvent;
+import net.minestom.server.event.player.PlayerCommandEvent;
 import net.minestom.server.event.player.PlayerDisconnectEvent;
 import net.minestom.server.instance.InstanceContainer;
 import net.minestom.server.instance.InstanceManager;
@@ -52,12 +53,15 @@ public class YggdrasilServer {
     }
 
     public void start() throws Exception {
+        //Minecraft Server Initialization
         MinecraftServer server = MinecraftServer.init();
 
+        //Start Console Thread
         console.start();
 
+        //Load Modules
         modules.addAll(loader.loadAll());
-        info("%d loaded modules.", modules.size());
+        LOGGER.info("%d loaded modules.".formatted(modules.size()));
 
         //Commands
         registerCommand(new StopCommand(this));
@@ -74,7 +78,7 @@ public class YggdrasilServer {
         //Listeners
         globalEventHandler = MinecraftServer.getGlobalEventHandler();
 
-        //Player pre login
+        //Player Pre Login
         globalEventHandler.addListener(AsyncPlayerConfigurationEvent.class, event -> {
             final Player player = event.getPlayer();
             onlinePlayers.add(player);
@@ -82,11 +86,19 @@ public class YggdrasilServer {
             player.setRespawnPoint(new Pos(0, 0, 0));
         });
 
+        //Player Disconnect
         globalEventHandler.addListener(PlayerDisconnectEvent.class, event -> {
             final Player player = event.getPlayer();
             onlinePlayers.remove(player);
         });
 
+        //Player Command Event
+        globalEventHandler.addListener(PlayerCommandEvent.class, event -> {
+            final Player player = event.getPlayer();
+            LOGGER.info("Player %s executed the command: %s".formatted(player.getName(), event.getCommand()));
+        });
+
+        //Open Server
         server.start("localhost", serverProperties.getServerPort());
     }
 
@@ -99,25 +111,12 @@ public class YggdrasilServer {
         });
     }
 
-    public void info(String fmt, Object... args) {LOGGER.info(String.format(fmt, args));}
-    public void warn(String fmt, Object... args) {LOGGER.warn(String.format(fmt, args));}
-    public void severe(String fmt, Object... args) {LOGGER.error(String.format(fmt, args));}
-
     private class SimpleModuleContext implements ModuleContext {
 
-        @Override
-        public void info(String fmt, Object... args) {
-            YggdrasilServer.this.info(fmt, args);
-        }
 
         @Override
-        public void warn(String fmt, Object... args) {
-            YggdrasilServer.this.warn(fmt, args);
-        }
-
-        @Override
-        public void severe(String fmt, Object... args) {
-            YggdrasilServer.this.severe(fmt, args);
+        public Logger getLogger() {
+            return LOGGER;
         }
 
         @Override
