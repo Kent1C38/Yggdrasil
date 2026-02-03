@@ -5,7 +5,9 @@ import fr.kent1c38.yggdrasil.api.server.ServerProperties;
 import fr.kent1c38.yggdrasil.engine.commands.GamemodeCommand;
 import fr.kent1c38.yggdrasil.engine.commands.ListCommand;
 import fr.kent1c38.yggdrasil.engine.commands.StopCommand;
+import fr.kent1c38.yggdrasil.engine.commands.TimeCommand;
 import fr.kent1c38.yggdrasil.engine.console.Console;
+import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
 import net.minestom.server.MinecraftServer;
 import net.minestom.server.command.builder.Command;
 import net.minestom.server.coordinate.Pos;
@@ -41,6 +43,8 @@ public class YggdrasilServer {
     private final ModuleLoader loader;
     private final List<ModuleLoader.LoadedModule> modules = new ArrayList<>();
 
+    private InstanceContainer instance;
+
     private GlobalEventHandler globalEventHandler;
     private final ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(4);
 
@@ -61,19 +65,20 @@ public class YggdrasilServer {
 
         //Load Modules
         modules.addAll(loader.loadAll());
-        LOGGER.info("%d loaded modules.".formatted(modules.size()));
+        LOGGER.info("{} loaded modules.", modules.size());
 
         //Commands
         registerCommand(new StopCommand(this));
         registerCommand(new GamemodeCommand());
         registerCommand(new ListCommand(this));
+        registerCommand(new TimeCommand(this));
 
         //Instance Init
         InstanceManager instanceManager = MinecraftServer.getInstanceManager();
-        InstanceContainer instanceContainer = instanceManager.createInstanceContainer();
+        instance = instanceManager.createInstanceContainer();
 
         //World Init
-        instanceContainer.setChunkLoader(new AnvilLoader("worlds/world"));
+        instance.setChunkLoader(new AnvilLoader("worlds/world"));
 
         //Listeners
         globalEventHandler = MinecraftServer.getGlobalEventHandler();
@@ -82,7 +87,7 @@ public class YggdrasilServer {
         globalEventHandler.addListener(AsyncPlayerConfigurationEvent.class, event -> {
             final Player player = event.getPlayer();
             onlinePlayers.add(player);
-            event.setSpawningInstance(instanceContainer);
+            event.setSpawningInstance(instance);
             player.setRespawnPoint(new Pos(0, 0, 0));
         });
 
@@ -95,7 +100,7 @@ public class YggdrasilServer {
         //Player Command Event
         globalEventHandler.addListener(PlayerCommandEvent.class, event -> {
             final Player player = event.getPlayer();
-            LOGGER.info("Player %s executed the command: %s".formatted(player.getName(), event.getCommand()));
+            LOGGER.info("Player {} executed the command: {}", LegacyComponentSerializer.legacySection().serialize(player.getName()), event.getCommand());
         });
 
         //Open Server
@@ -144,6 +149,10 @@ public class YggdrasilServer {
 
     }
 
+    public InstanceContainer getInstance() {
+        return instance;
+    }
+
     public List<ModuleLoader.LoadedModule> getModules() {
         return modules;
     }
@@ -156,5 +165,9 @@ public class YggdrasilServer {
 
     public HashSet<Player> getOnlinePlayers() {
         return onlinePlayers;
+    }
+
+    public Logger getLogger() {
+        return LOGGER;
     }
 }

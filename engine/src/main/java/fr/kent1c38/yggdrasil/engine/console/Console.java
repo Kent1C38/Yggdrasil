@@ -52,16 +52,16 @@ public class Console {
                  String line = reader.readLine("");
                  if (!line.isBlank()) {
                      if (!MinecraftServer.getCommandManager().commandExists(line.split(" ")[0]))
-                        server.info("(%s) Unknown command: %s", retrieveSenderName(sender),  line);
+                        server.getLogger().info("({}) Unknown command: {}", retrieveSenderName(sender),  line);
                      else {
-                         server.info("(%s) Executing command /%s", retrieveSenderName(sender), line);
+                         server.getLogger().info("({}) Executing command /{}", retrieveSenderName(sender), line);
                          MinecraftServer.getCommandManager().execute(sender, line);
                      }
                  }
              } catch (UserInterruptException | EndOfFileException e) {
                  running = false;
              } catch (Exception e) {
-                 server.severe(e.getMessage());
+                 server.getLogger().error(e.getMessage());
              }
          }
     }

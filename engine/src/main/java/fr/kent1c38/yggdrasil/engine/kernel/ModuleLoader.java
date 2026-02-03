@@ -24,17 +24,17 @@ public class ModuleLoader {
         this.server = server;
     }
 
-    public List<LoadedModule> loadAll() throws Exception {
+    public List<LoadedModule> loadAll() {
         List<LoadedModule> loadedModules = new ArrayList<>();
         if (!modulesDirectory.exists()) modulesDirectory.mkdirs();
-        File[] files = modulesDirectory.listFiles((dir, name) -> name.endsWith(".jar"));
+        File[] files = modulesDirectory.listFiles((_, name) -> name.endsWith(".jar"));
         if (files == null) return loadedModules;
         for (File jar : files) {
             try {
                 LoadedModule lm = loadJar(jar);
                 if (lm != null) loadedModules.add(lm);
             } catch (Exception e) {
-                ctx.warn("Error while loading module %s: %s", jar.getName(), e.getMessage());
+                ctx.getLogger().warn("Error while loading module {}: {}", jar.getName(), e.getMessage());
             }
         }
         return loadedModules;
@@ -44,7 +44,7 @@ public class ModuleLoader {
         try (JarFile jf = new JarFile(jarFile)) {
             JarEntry entry = jf.getJarEntry("plugin.properties");
             if (entry == null) {
-                ctx.warn("No plugin.properties found in %s, skipping.", jarFile.getName());
+                ctx.getLogger().warn("No plugin.properties found in {}, skipping.", jarFile.getName());
                 return null;
             }
             try (InputStream is = jf.getInputStream(entry)) {
@@ -52,7 +52,7 @@ public class ModuleLoader {
                 p.load(is);
                 String mainClass = p.getProperty("main");
                 if (mainClass == null) {
-                    ctx.warn("plugin.properties does not contain a 'main-class' property in %s, skipping.", jarFile.getName());
+                    ctx.getLogger().warn("plugin.properties does not contain a 'main-class' property in {}, skipping.", jarFile.getName());
                     return null;
                 }
 
@@ -61,11 +61,11 @@ public class ModuleLoader {
                 Class<?> clazz = Class.forName(mainClass, true, cl);
                 Object inst = clazz.getDeclaredConstructor().newInstance();
                 if (!(inst instanceof fr.kent1c38.yggdrasil.api.module.Module module)) {
-                    ctx.warn("Class %s does not extends from Module class, skipping...", mainClass);
+                    ctx.getLogger().warn("Class {} does not extends from Module class, skipping...", mainClass);
                     return null;
                 }
                 module.onEnable(ctx);
-                ctx.info("Successfully loaded module: %s", jarFile.getName());
+                ctx.getLogger().info("Successfully loaded module: {}", jarFile.getName());
                 return new LoadedModule(module, cl, jarFile.getName());
             }
         }
@@ -75,7 +75,7 @@ public class ModuleLoader {
         try {
             loadedModule.module.onDisable(ctx);
         } catch (Exception e) {
-            ctx.warn("Error while disabling module %s: %s", loadedModule.jarName, e.getMessage());
+            ctx.getLogger().warn("Error while disabling module {}: {}", loadedModule.jarName, e.getMessage());
         }
 
         try {
@@ -83,7 +83,7 @@ public class ModuleLoader {
                 cl.close();
             }
         } catch (Exception e) {
-            ctx.warn("Error while closing classloader for %s", loadedModule.jarName);
+            ctx.getLogger().warn("Error while closing classloader for {}", loadedModule.jarName);
         }
     }
 
