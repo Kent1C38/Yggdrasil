@@ -2,10 +2,7 @@ package fr.kent1c38.yggdrasil.engine.kernel;
 
 import fr.kent1c38.yggdrasil.api.module.ModuleContext;
 import fr.kent1c38.yggdrasil.api.server.ServerProperties;
-import fr.kent1c38.yggdrasil.engine.commands.GamemodeCommand;
-import fr.kent1c38.yggdrasil.engine.commands.ListCommand;
-import fr.kent1c38.yggdrasil.engine.commands.StopCommand;
-import fr.kent1c38.yggdrasil.engine.commands.TimeCommand;
+import fr.kent1c38.yggdrasil.engine.commands.*;
 import fr.kent1c38.yggdrasil.engine.console.Console;
 import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
 import net.minestom.server.MinecraftServer;
@@ -72,6 +69,7 @@ public class YggdrasilServer {
         registerCommand(new GamemodeCommand());
         registerCommand(new ListCommand(this));
         registerCommand(new TimeCommand(this));
+        registerCommand(new TPCommand());
 
         //Instance Init
         InstanceManager instanceManager = MinecraftServer.getInstanceManager();
