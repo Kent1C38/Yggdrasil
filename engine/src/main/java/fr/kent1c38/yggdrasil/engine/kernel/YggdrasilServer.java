@@ -17,18 +17,18 @@ import net.minestom.server.event.player.PlayerDisconnectEvent;
 import net.minestom.server.instance.InstanceContainer;
 import net.minestom.server.instance.InstanceManager;
 import net.minestom.server.instance.anvil.AnvilLoader;
+import net.minestom.server.timer.Task;
+import net.minestom.server.timer.TaskSchedule;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.ScheduledFuture;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.*;
 import java.util.function.Consumer;
 
 public class YggdrasilServer {
@@ -42,8 +42,14 @@ public class YggdrasilServer {
 
     private InstanceContainer instance;
 
+    private Task heartbeat;
+
     private GlobalEventHandler globalEventHandler;
-    private final ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(4);
+    private final ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(4, r -> {
+        Thread t = new Thread(r);
+        t.setDaemon(true);
+        return t;
+    });
 
     private final HashSet<Player> onlinePlayers = new HashSet<>();
 
@@ -103,15 +109,25 @@ public class YggdrasilServer {
 
         //Open Server
         server.start("localhost", serverProperties.getServerPort());
+
+        heartbeat = MinecraftServer.getSchedulerManager().scheduleTask(() -> {
+            if (!console.isRunning())
+                stop();
+        }, TaskSchedule.duration(500, ChronoUnit.MILLIS), TaskSchedule.duration(500, ChronoUnit.MILLIS));
+        MinecraftServer.getSchedulerManager().buildShutdownTask(MinecraftServer::stopCleanly);
+    }
+
+    public void stopServer() {
+        loader.unloadAll();
+        scheduler.shutdown();
+        heartbeat.cancel();
+
+        MinecraftServer.stopCleanly();
     }
 
     public void stop() {
         console.stop();
-        MinecraftServer.getSchedulerManager().scheduleNextTick(() -> {
-            loader.unloadAll();
-            MinecraftServer.stopCleanly();
-            System.exit(0);
-        });
+        stopServer();
     }
 
     private class SimpleModuleContext implements ModuleContext {

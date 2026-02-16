@@ -82,4 +82,8 @@ public class Console {
             return "Console";
         }
     }
+
+    public boolean isRunning() {
+        return inputThread.isAlive();
+    }
 }
